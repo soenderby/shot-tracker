@@ -2,7 +2,7 @@
 
 ## Overview
 
-This is a minimalist, single-user Android application designed to track scores for clay pigeon shooting. The app operates fully offline, storing all data locally on the device. It supports two shooting patterns and records session-based scores for personal use.
+This is a minimalist, single-user React Native application using Expo designed to track scores for clay pigeon shooting. The app operates fully offline, storing all data locally on the device. It supports two shooting patterns and records session-based scores for personal use.
 
 ## Functional Requirements
 
@@ -84,11 +84,11 @@ enum class ShootingPattern {
 
 ## Architecture Choices
 
-- Language: Kotlin
-- Architecture: MVVM (Model-View-ViewModel)
-- UI Framework: Jetpack Compose (preferred for rapid, clean UI)
-- Data Storage: Room database
-- Dependency Injection: Hilt (optional but recommended)
+- Language: JavaScript or TypeScript
+- Architecture: Component-based + Hooks
+- UI Framework: React Native components (via Expo)
+- Data Storage: Expo SQLite or MMKV (for structured local storage)
+- State Management: React Context or Zustand (optional but recommended)
 
 ## Error Handling
 

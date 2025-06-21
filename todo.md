@@ -1,167 +1,76 @@
-# Clay Pigeon Shooting Score Tracker — TODO Checklist
-
-Use this file to track progress. Mark each box with **x** when the task or sub‑task is complete.
-
----
-
-## Phase 0  Scaffolding & Tooling
-- [ ] Initialise Git repository
-- [ ] Add `.gitignore` (Android / IntelliJ / macOS / Windows)
-- [ ] Create Android Studio project (Empty Activity)
-  - [ ] Minimum SDK 24
-  - [ ] Compile / Target SDK 34
-  - [ ] Language: Kotlin
-  - [ ] App name: **ClayScoreTracker**
-- [ ] Convert Gradle scripts to Kotlin DSL
-  - [ ] Enable Jetpack Compose BOM
-  - [ ] Add Room (runtime, compiler kapt/ksp)
-  - [ ] Add Hilt (android, compiler)
-  - [ ] Add JUnit 5, Turbine, Espresso, Barista
-- [ ] Set up GitHub Actions workflow `.github/workflows/android.yml`
-  - [ ] Cache Gradle deps
-  - [ ] Job: Unit tests (`./gradlew testDebugUnitTest`)
-  - [ ] Job: Lint (`./gradlew lint`)
-  - [ ] Job: Build (`./gradlew assembleDebug`)
-- [ ] Verify local build succeeds
-- [ ] Push initial commit / open PR
+# Clay Pigeon Shooting Score Tracker — Project Checklist
+*(Use the ☐/☑ boxes to track progress)*
 
 ---
 
-## Phase 1  Domain & Storage (layer 1)
-### Iteration 1  Domain Model
-- [ ] Add `enum class ShootingPattern { ALL_SINGLES, MIXED }`
-- [ ] Add `data class ShootingSession` with Room `@Entity`
-  - [ ] `id: Long` – primary key, autoGenerate
-  - [ ] `date: Long` – epoch millis
-  - [ ] `pattern: ShootingPattern`
-  - [ ] `stationScores: List<Int>`
-  - [ ] `totalScore: Int`
-  - [ ] `note: String?`
-- [ ] Implement `TypeConverter` for `List<Int>` (JSON) and `ShootingPattern`
-- [ ] Write JUnit test: in‑memory Room DB insert & read round‑trip
+## 1. Bootstrap & Tooling
+- [ ] **Init Expo project** – `npx create-expo-app` with TypeScript template  
+- [ ] **Add MIT License & README**
+- [ ] **Enable strict TypeScript** (`strict`, `noUncheckedIndexedAccess`)
+- [ ] **Set up ESLint + Prettier** (Airbnb rules, Husky pre‑commit)
+- [ ] **Add Jest + RTL** with sample test & `setupTests.ts`
+- [ ] **Create GitHub Actions CI** (install, lint, type‑check, unit tests)
+
+## 2. Data Layer
+- [ ] **Define domain models** (`ShootingPattern`, `ShootingSession`, helper `computeTotalScore`)
+- [ ] **SQLite schema migration** (`001_create_sessions.sql`)
+- [ ] **SessionRepository implementation** (`save`, `getLast`, `getAll`)
+- [ ] **Repository unit tests** (happy path, malformed input)
+
+## 3. State Management
+- [ ] **Create Zustand store** (`sessions`, `addSession`, `hydrate`)
+- [ ] **Store unit tests** (hydrate & addSession behaviour)
+
+## 4. Navigation Shell
+- [ ] **Install & configure React Navigation**
+- [ ] **NavigationContainer** in `App.tsx`
+- [ ] **Stacks & placeholders** (Home, NewSession flow, History)
+
+## 5. Home Screen
+- [ ] **Static Home UI** (title, “Start New Session”, “View All Sessions”)
+- [ ] **Render latest session card**
+- [ ] **Home screen tests** (empty + populated)
+
+## 6. New Session Flow
+- [ ] **Pattern Selector view** (radio buttons, Next)
+- [ ] **Score Entry view** (4 inputs, validation)
+- [ ] **Confirm & Save view** (summary, optional note, Save button)
+- [ ] **Unsaved exit guard** (`beforeRemove` alert)
+- [ ] **Flow unit tests** (selection, validation, save once)
+
+## 7. Wiring & Integration
+- [ ] **Hydrate store on app start**
+- [ ] **Wire New Session save into store & DB**
+- [ ] **Integration tests** (simulate full save, assert Home updates)
+
+## 8. Session History Screen
+- [ ] **FlatList of sessions** (newest first, card layout)
+- [ ] **History screen tests** (order, empty state)
+
+## 9. UX Polish & Safety
+- [ ] **Orientation lock** to portrait (`expo-screen-orientation`)
+- [ ] **Global ErrorBoundary**
+- [ ] **Branding assets** (icon, splash, copy updates)
+
+## 10. End‑to‑End Testing (Detox)
+- [ ] **Detox init & config**
+- [ ] **E2E happy‑path save flow**
+- [ ] **E2E discard flow**
+- [ ] **E2E history order**
+- [ ] **Detox running headless in CI**
+
+## 11. Release Preparation
+- [ ] **EAS build profiles (`eas.json`)**
+- [ ] **Standard‑version release script**
+- [ ] **README badges & QA checklist**
+- [ ] **Prune unused dependencies**
+- [ ] **Tag `v1.0.0‑alpha`**
+
+## 12. Documentation
+- [ ] **Post‑mortem / retrospective** (`docs/post-mortem.md`)
 
 ---
 
-## Phase 2  DAO & Repository (layer 2)
-### Iteration 2
-- [ ] Create `SessionDao`
-  - [ ] `@Insert suspend fun insert(session)`
-  - [ ] `@Query("SELECT * FROM ShootingSession ORDER BY date DESC") fun getAll(): Flow<List<ShootingSession>>`
-- [ ] Build `ClayScoreDatabase` (singleton)
-- [ ] Implement `SessionRepository`
-  - [ ] `suspend fun add(session)`
-  - [ ] `fun latest(): Flow<ShootingSession?>`
-- [ ] Unit tests
-  - [ ] DAO ordering by date
-  - [ ] Repository emits latest
-
----
-
-## Phase 3  Use‑Cases (layer 3)
-### Iteration 3
-- [ ] Add `CreateSessionUseCase`
-  - [ ] Validate list size == 4
-  - [ ] Compute `totalScore`
-  - [ ] Persist via repository
-- [ ] Add `GetLatestSessionUseCase`
-- [ ] Unit tests
-  - [ ] Invalid size throws `IllegalArgumentException`
-  - [ ] Saving valid session propagates via `latest` flow
-
----
-
-## Phase 4  ViewModels (layer 4)
-### Iteration 4
-- [ ] `HomeViewModel`
-  - [ ] Inject `GetLatestSessionUseCase`
-  - [ ] `StateFlow<SessionUiState>` (Loading / Empty / Success)
-- [ ] `SessionEntryViewModel`
-  - [ ] Holds `pattern`, `scores: MutableList<String>`, `note`
-  - [ ] `canSave` derived state
-  - [ ] `save()` triggers use‑case and emits `UiEvent.Saved`
-- [ ] ViewModel tests with Turbine
-  - [ ] `canSave` toggles appropriately
-  - [ ] Save event emitted
-
----
-
-## Phase 5  UI – Home Screen slice
-### Iteration 5
-- [ ] Compose `HomeScreen`
-  - [ ] Loading → CircularProgress
-  - [ ] Empty → “No sessions yet”
-  - [ ] Success → Card with date, 4 scores, total, note
-  - [ ] FloatingActionButton “START”
-- [ ] Previews (empty + success)
-- [ ] Screenshot test placeholder text
-
----
-
-## Phase 6  UI – Session Flow slices
-### Iteration 6
-- [ ] `PatternPickerScreen` – two `FilterChip`s
-- [ ] `ScoreEntryScreen`
-  - [ ] Four `OutlinedTextField`s
-  - [ ] Header shows current pattern
-  - [ ] “Next” enabled when 4 scores entered
-- [ ] `NoteScreen`
-  - [ ] Multiline text field
-  - [ ] “Save” button
-- [ ] Compose tests
-  - [ ] Entering scores enables Next
-
----
-
-## Phase 7  Navigation & Dialogs
-### Iteration 7
-- [ ] Add `NavHost` in `MainActivity`
-  - [ ] Destinations: home, patternPicker, scoreEntry, noteEntry, history
-  - [ ] Start destination: home
-- [ ] Wire FAB → patternPicker
-- [ ] Add discard confirmation dialog on back press within session flow
-- [ ] Unit test with `TestNavHostController`
-
----
-
-## Phase 8  History Screen
-### Iteration 8
-- [ ] `HistoryViewModel` collects all sessions
-- [ ] `HistoryScreen` with `LazyColumn`
-  - [ ] Row shows date, 4 scores, total, note
-- [ ] Compose test: newest first order
-
----
-
-## Phase 9  Instrumentation Tests
-### Iteration 9
-- [ ] Espresso / Barista test: complete session, verify Home total
-- [ ] Test: discard mid‑session confirmation
-- [ ] Test: rotation preserves state
-- [ ] Add `connectedCheck` to CI
-
----
-
-## Phase 10  Polish & Release
-- [ ] Lock orientation to portrait in Manifest
-- [ ] Repository catches exceptions, emits error UiState
-- [ ] Show Snackbar on generic error
-- [ ] Remove all TODOs and dead code
-- [ ] Generate Javadoc/KDoc
-- [ ] Draft README
-  - [ ] Build instructions
-  - [ ] Running tests
-  - [ ] CI status badge
-- [ ] Version code & name for release
-- [ ] Generate signed APK/AAB (optional)
-
----
-
-## Continuous Review Checklist  (verify for every pull request)
-- [ ] All unit tests pass (`./gradlew testDebugUnitTest`)
-- [ ] All instrumentation tests pass (`./gradlew connectedCheck`)
-- [ ] Lint passes (`./gradlew lint`)
-- [ ] PR linked to GitHub issue / ticket
-- [ ] No unchecked TODO/FIXME markers
-- [ ] Source files ≤ 120 lines (guideline)
-- [ ] Public classes / functions documented
-- [ ] Code reviewed by at least one teammate
+### Tips
+* Work task‑by‑task; each should end with green CI.
+* Check off sub‑tasks only after writing **tests** or **manual verification**.
