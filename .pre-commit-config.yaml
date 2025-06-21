@@ -1,0 +1,16 @@
+repos:
+  - repo: local
+    hooks:
+      - id: lint
+        name: Run ESLint
+        entry: npm run lint
+        language: system
+        types: [javascript]
+        files: \.(js|jsx|ts|tsx)$
+
+      - id: test
+        name: Run Tests
+        entry: npm run test
+        language: system
+        types: [javascript]
+        files: \.(js|jsx|ts|tsx)$
